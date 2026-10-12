@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Мой день — личный планировщик</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#today-board">Перейти к задачам</a>
+  <main class="app-shell">
+    <header class="page-header">
+      <div class="brand">
+        <span class="eyebrow"><span class="sun" aria-hidden="true">☀</span> Пространство для важного</span>
+        <h1>Мой день<span class="title-dot" aria-hidden="true">.</span></h1>
+        <p id="daily-quote" class="daily-quote"></p>
+      </div>
+      <div class="header-right">
+        <div class="date-chip"><span id="today-date"></span><span id="current-time" class="current-time"></span></div>
+        <div class="header-actions">
+          <button id="open-archive" class="button button-light" type="button">Архив <span id="archive-count" class="count">0</span></button>
+          <button id="undo-completion" class="button button-light" type="button" disabled><span aria-hidden="true">↶</span> Отменить выполнение</button>
+          <button id="open-backup" class="button button-light" type="button">Резервная копия</button>
+          <button id="add-task" class="button button-primary" type="button"><span aria-hidden="true">＋</span> Добавить задачу</button>
+        </div>
+      </div>
+    </header>
+
+    <div id="storage-alert" class="notice notice-error" role="alert" hidden></div>
+    <div id="storage-actions" class="storage-actions" hidden><button id="storage-download" class="button button-light" type="button">Скачать копию</button><button id="reload-storage" class="button button-light" type="button" hidden>Загрузить актуальные данные</button><button id="storage-cleanup" class="button button-light" type="button">Очистить старый архив</button></div>
+    <section id="recovery-panel" class="panel recovery-panel" hidden aria-labelledby="recovery-heading"><h2 id="recovery-heading">Восстановление данных</h2><p>Сохранённые данные не удалось прочитать. Исходная запись не изменена. Скачайте её, восстановите исправную копию или начните заново.</p><div class="history-actions"><button id="download-raw" class="button button-light" type="button">Скачать исходную строку</button><button id="recovery-import" class="button button-light" type="button">Восстановить копию</button><button id="reset-state" class="button button-light" type="button">Создать пустой план</button></div></section>
+    <div class="workspace">
+      <div class="tasks-column">
+        <section id="today-board" class="panel board" aria-labelledby="today-heading">
+          <div class="panel-heading"><div><span class="eyebrow">Ваш фокус</span><h2 id="today-heading">Сегодня <span id="today-count" class="count">0</span></h2></div><span id="save-status" class="save-status" role="status"></span></div>
+          <p class="section-hint">Главные выше мелких. Внутри раздела выше — важнее.</p>
+          <div class="day-progress">
+            <div class="progress-heading"><span id="today-progress-summary">Задач на сегодня пока нет</span><span id="today-progress-percent" aria-hidden="true">0%</span></div>
+            <progress id="today-progress" max="100" value="0" aria-label="Выполнение сегодняшних задач" aria-describedby="today-progress-summary"></progress>
+          </div>
+          <section class="task-section" aria-labelledby="today-main-heading">
+            <div class="section-heading"><h3 id="today-main-heading">Главные <span id="today-main-count" class="small-count">0</span></h3><button class="button-text" type="button" data-action="add" data-location="day" data-category="main">＋ Добавить</button></div>
+            <div id="today-main-list" class="task-list drop-zone" data-location="day" data-category="main" aria-label="Главные задачи на сегодня"></div>
+          </section>
+          <section class="task-section" aria-labelledby="today-small-heading">
+            <div class="section-heading"><h3 id="today-small-heading">Мелкие <span id="today-small-count" class="small-count">0</span></h3><button class="button-text" type="button" data-action="add" data-location="day" data-category="small">＋ Добавить</button></div>
+            <div id="today-small-list" class="task-list drop-zone" data-location="day" data-category="small" aria-label="Мелкие задачи на сегодня"></div>
+          </section>
+        </section>
+
+        <section class="panel backlog-panel" aria-labelledby="backlog-heading">
+          <div class="panel-heading"><div><span class="eyebrow">Можно вернуться позже</span><h2 id="backlog-heading">Не сегодня <span id="backlog-count" class="count">0</span></h2></div><span class="leaf-mark" aria-hidden="true">❧</span></div>
+          <p class="section-hint">Важные дела на потом. Они сохраняются здесь между днями.</p>
+          <section class="task-section" aria-labelledby="backlog-main-heading">
+            <div class="section-heading"><h3 id="backlog-main-heading">Главные <span id="backlog-main-count" class="small-count">0</span></h3><button class="button-text" type="button" data-action="add" data-location="backlog" data-category="main">＋ Добавить</button></div>
+            <div id="backlog-main-list" class="task-list drop-zone" data-location="backlog" data-category="main" aria-label="Отложенные главные задачи"></div>
+          </section>
+          <section class="task-section" aria-labelledby="backlog-small-heading">
+            <div class="section-heading"><h3 id="backlog-small-heading">Мелкие <span id="backlog-small-count" class="small-count">0</span></h3><button class="button-text" type="button" data-action="add" data-location="backlog" data-category="small">＋ Добавить</button></div>
+            <div id="backlog-small-list" class="task-list drop-zone" data-location="backlog" data-category="small" aria-label="Отложенные мелкие задачи"></div>
+          </section>
+        </section>
+
+        <details id="unfinished-panel" class="panel unfinished-panel">
+          <summary><span>Незавершённые <span id="unfinished-count" class="count">0</span></span><span class="summary-arrow" aria-hidden="true">⌄</span></summary>
+          <p class="section-hint">Задачи других дней остаются на своих датах. Выберите, что вернуть в план.</p>
+          <div class="filter-row"><label>Поиск<input id="unfinished-search" type="search" placeholder="Название задачи"></label><label>Дата<select id="unfinished-date"><option value="">Все даты</option></select></label></div>
+          <div id="unfinished-list" class="history-list"></div>
+        </details>
+      </div>
+
+      <aside class="day-column" aria-label="Настройки рабочего дня">
+        <section class="panel day-panel" aria-labelledby="day-heading">
+          <div class="panel-heading"><div><span class="eyebrow">В своём ритме</span><h2 id="day-heading">Границы дня</h2></div><span class="round-icon" aria-hidden="true">◷</span></div>
+          <form id="day-form" novalidate>
+            <div class="field-pair"><label for="day-start">Начало дня<input id="day-start" name="start" type="time" step="60" aria-describedby="day-error"></label><label for="day-end">Конец дня<input id="day-end" name="end" type="time" step="60" aria-describedby="day-error"></label></div>
+            <label class="break-label" for="default-break">Перерыв по умолчанию<span class="input-unit"><input id="default-break" name="break" type="number" min="0" max="180" step="1"><span>мин</span></span></label>
+            <p id="day-error" class="field-error" role="alert"></p>
+          </form>
+          <p class="quiet-note">Задайте начало и окончание вручную — так у плана будут понятные границы.</p>
+        </section>
+
+        <section class="panel routines-panel" aria-labelledby="routines-heading">
+          <div class="panel-heading"><div><span class="eyebrow">Место для жизни</span><h2 id="routines-heading">Блоки дня</h2></div><button id="add-routine" type="button" class="button-icon" aria-label="Добавить бытовой блок">＋</button></div>
+          <p class="section-hint">Отдых и дела с определённым временем.</p>
+          <div id="routine-list"></div>
+        </section>
+
+        <section class="panel schedule-panel" aria-labelledby="schedule-heading">
+          <div class="panel-heading"><h2 id="schedule-heading">План дня</h2><span id="schedule-status" class="schedule-status"></span></div>
+          <button id="recalculate" class="button-text" type="button">Пересчитать от текущего времени</button>
+          <dl id="schedule-summary" class="schedule-summary"></dl>
+          <p id="schedule-note" class="quiet-note" hidden></p>
+          <ul id="schedule-warnings" class="schedule-warnings" aria-live="polite"></ul>
+          <div id="timeline-toolbar" class="timeline-toolbar" hidden><span>Расписание</span><button id="timeline-now" type="button" class="button-text">К текущему времени</button></div>
+          <div id="timeline-scroll" class="timeline-scroll" tabindex="0" role="region" aria-label="Временная лента дня" hidden><div id="timeline" class="timeline"></div></div>
+          <section id="timeline-detail" class="timeline-detail" aria-label="Выбранная часть расписания" hidden></section>
+          <button id="completed-today" type="button" class="button-text">Выполнено сегодня: 0 →</button>
+        </section>
+      </aside>
+    </div>
+    <footer class="app-footer"><span>У каждого дела — своё время.</span><span>Данные хранятся в этом браузере</span></footer>
+  </main>
+
+  <dialog id="task-dialog" class="dialog dialog-form" aria-labelledby="task-dialog-heading">
+    <form id="task-form" novalidate>
+      <div class="dialog-heading"><div><span class="eyebrow">Один понятный шаг</span><h2 id="task-dialog-heading">Новая задача</h2></div><button type="button" class="button-icon close-button" data-close="task-dialog" aria-label="Закрыть форму задачи">×</button></div>
+      <label for="task-title">Название<input id="task-title" name="title" type="text" maxlength="200" required placeholder="Что вы хотите сделать?" autocomplete="off"></label>
+      <div class="field-pair"><label for="task-category">Тип<select id="task-category" name="category"><option value="main">Главная</option><option value="small">Мелкая</option></select></label><label for="task-location">Куда добавить<select id="task-location" name="location"><option value="day">Сегодня</option><option value="backlog">Не сегодня</option></select></label></div>
+      <label for="task-mode">Время<select id="task-mode" name="mode"><option value="flexible">По длительности</option><option value="fixed">Фиксированное время</option></select></label>
+      <div id="duration-fields"><label for="task-duration">Длительность, минут<input id="task-duration" name="duration" type="number" min="1" max="1440" step="1" required placeholder="Например, 30"></label></div>
+      <div id="fixed-fields" class="field-pair" hidden><label for="task-start">Начало<input id="task-start" name="start" type="time" step="60"></label><label for="task-end">Окончание<input id="task-end" name="end" type="time" step="60"></label></div>
+      <p id="task-progress-note" class="quiet-note" hidden></p>
+      <p id="task-error" class="field-error" role="alert"></p>
+      <div class="dialog-actions"><button type="button" class="button button-light" data-close="task-dialog">Отмена</button><button type="submit" class="button button-primary" id="save-task">Добавить задачу</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="routine-dialog" class="dialog dialog-form" aria-labelledby="routine-dialog-heading">
+    <form id="routine-form" novalidate>
+      <div class="dialog-heading"><div><span class="eyebrow">Обязательный кусочек дня</span><h2 id="routine-dialog-heading">Блок дня</h2></div><button type="button" class="button-icon close-button" data-close="routine-dialog" aria-label="Закрыть форму блока">×</button></div>
+      <label for="routine-title">Название<input id="routine-title" name="title" type="text" maxlength="200" required autocomplete="off" placeholder="Например, прогулка"></label>
+      <label for="routine-kind">Вид<select id="routine-kind" name="kind"><option value="rest">Отдых</option><option value="work">Занятое время</option></select></label>
+      <div class="field-pair"><label for="routine-start">Начало<input id="routine-start" name="start" type="time" step="60"></label><label for="routine-duration">Длительность, минут<input id="routine-duration" name="duration" type="number" min="1" max="1440" step="1"></label></div>
+      <label class="check-label"><input id="routine-enabled" name="enabled" type="checkbox" checked> Включить в сегодняшний день</label>
+      <p id="routine-end-note" class="quiet-note"></p><p id="routine-error" class="field-error" role="alert"></p>
+      <div class="dialog-actions"><button type="button" class="button button-light" data-close="routine-dialog">Отмена</button><button type="submit" class="button button-primary">Сохранить блок</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="archive-dialog" class="dialog archive-dialog" aria-labelledby="archive-heading">
+    <div class="dialog-heading"><div><span class="eyebrow">Вы уже сделали это</span><h2 id="archive-heading">Архив <span id="archive-dialog-count" class="count">0</span></h2></div><button type="button" class="button-icon close-button" data-close="archive-dialog" aria-label="Закрыть архив">×</button></div>
+    <p class="section-hint">Последняя выполненная задача всегда сверху. Случайную отметку можно вернуть.</p>
+    <div class="filter-row"><label>Поиск<input id="archive-search" type="search" placeholder="Название задачи"></label><label>Дата плана<input id="archive-date" type="date"></label></div>
+    <label class="check-label"><input id="archive-today" type="checkbox"> Выполнено сегодня</label>
+    <div id="archive-list" class="history-list"></div>
+    <button id="archive-reset" class="button-text" type="button">Сбросить фильтры</button>
+  </dialog>
+
+  <dialog id="view-dialog" class="dialog dialog-form" aria-labelledby="view-heading"><div class="dialog-heading"><h2 id="view-heading">Задача прежнего дня</h2><button type="button" class="button-icon close-button" data-close="view-dialog" aria-label="Закрыть просмотр">×</button></div><div id="view-content"></div><div class="dialog-actions"><button type="button" class="button button-light" data-close="view-dialog">Закрыть</button></div></dialog>
+
+  <dialog id="break-dialog" class="dialog dialog-form" aria-labelledby="break-heading"><div class="dialog-heading"><h2 id="break-heading">Длительность перерыва</h2><button type="button" class="button-icon close-button" data-close="break-dialog" aria-label="Закрыть настройку перерыва">×</button></div><form id="break-form" novalidate><p id="break-source" class="quiet-note"></p><label>Перерыв, минут<input id="break-minutes" type="number" min="0" max="180" step="1" inputmode="numeric"></label><p class="quiet-note">Нулевой перерыв сохраняется с предупреждением, если дальше есть работа.</p><p id="break-error" class="field-error" role="alert"></p><div class="dialog-actions"><button type="button" class="button button-light" data-close="break-dialog">Отмена</button><button type="submit" class="button button-primary">Сохранить</button></div></form></dialog>
+
+  <dialog id="backup-dialog" class="dialog dialog-form" aria-labelledby="backup-heading"><div class="dialog-heading"><h2 id="backup-heading">Резервная копия</h2><button type="button" class="button-icon close-button" data-close="backup-dialog" aria-label="Закрыть резервные копии">×</button></div><p id="backup-size" class="quiet-note"></p><p class="quiet-note">Копия сохраняет все задачи, архив, выполненные части и настройки — включая изменения, которые пока не удалось записать в браузер.</p><div class="backup-buttons"><button id="download-backup" class="button button-primary" type="button">Скачать копию</button><label>Восстановить из JSON-файла<input id="import-file" type="file" accept=".json,application/json"></label><button id="open-cleanup" class="button button-light" type="button">Очистить старый архив</button></div><p id="backup-error" class="field-error" role="alert"></p></dialog>
+
+  <dialog id="import-dialog" class="dialog" aria-labelledby="import-heading"><div class="dialog-heading"><h2 id="import-heading">Восстановить копию?</h2><button type="button" class="button-icon close-button" data-close="import-dialog" aria-label="Отменить импорт">×</button></div><p id="import-counts"></p><p class="notice">Импорт заменит все текущие данные. При необходимости сначала скачайте текущую копию.</p><p id="import-error" class="field-error" role="alert"></p><div class="dialog-actions"><button id="import-download" type="button" class="button button-light">Скачать текущую копию</button><button type="button" class="button button-light" data-close="import-dialog">Отмена</button><button id="import-replace" type="button" class="button button-primary">Заменить данные</button></div></dialog>
+
+  <dialog id="cleanup-dialog" class="dialog dialog-form archive-dialog" aria-labelledby="cleanup-heading"><div class="dialog-heading"><h2 id="cleanup-heading">Очистить старый архив</h2><button type="button" class="button-icon close-button" data-close="cleanup-dialog" aria-label="Отменить очистку">×</button></div><label>Выполнено раньше<input id="cleanup-before" type="date"></label><p class="quiet-note">Активные задачи, сегодняшние завершения и история сохранённых задач останутся.</p><p id="cleanup-summary" class="quiet-note"></p><ul id="cleanup-list" class="cleanup-list"></ul><p id="cleanup-error" class="field-error" role="alert"></p><button id="cleanup-download" class="button button-light" type="button">Скачать полную текущую копию</button><label class="check-label"><input id="cleanup-confirm" type="checkbox" disabled> Копия сохранена, удалить выбранные записи</label><div class="dialog-actions"><button type="button" class="button button-light" data-close="cleanup-dialog">Отмена</button><button id="cleanup-apply" type="button" class="button button-primary" disabled>Удалить выбранные записи</button></div></dialog>
+
+  <dialog id="rollover-dialog" class="dialog" aria-labelledby="rollover-heading"><h2 id="rollover-heading">Начался новый день</h2><p class="quiet-note">Черновик сохранён в этой вкладке. Выберите, куда добавить задачу после сохранения формы.</p><div class="dialog-actions"><button id="rollover-today" type="button" class="button button-primary">Добавить на сегодня</button><button id="rollover-backlog" type="button" class="button button-light">Добавить в Не сегодня</button><button id="rollover-cancel" type="button" class="button button-light">Отменить</button></div></dialog>
+
+  <dialog id="confirm-dialog" class="dialog confirm-dialog" aria-labelledby="confirm-heading"><form id="confirm-form"><h2 id="confirm-heading">Подтверждение</h2><p id="confirm-message"></p><div class="dialog-actions"><button type="button" class="button button-light" data-close="confirm-dialog" id="confirm-cancel">Отмена</button><button type="submit" class="button button-primary" id="confirm-accept">Подтвердить</button></div></form></dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden><span id="toast-message"></span><button id="toast-undo" class="button-text" type="button" hidden>Отменить</button><button id="toast-dismiss" class="button-icon" type="button" aria-label="Закрыть уведомление">×</button></div>
+  <div id="announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <template id="task-card-template"><article class="task-card"><button type="button" class="drag-handle" aria-label="Переместить задачу"><span aria-hidden="true">⠿</span></button><button type="button" class="complete-button" aria-label="Отметить выполненной"><span aria-hidden="true">✓</span></button><div class="task-content"><h4 class="task-title"></h4><div class="task-meta"></div><button type="button" class="button-text task-transfer"></button></div><div class="task-end"><span class="duration-pill"></span><details class="task-menu"><summary aria-label="Действия с задачей">⋯</summary><div class="menu-items"></div></details></div></article></template>
+  <noscript><p class="notice">Для работы планировщика включите JavaScript в браузере.</p></noscript>
+</body>
+</html>
